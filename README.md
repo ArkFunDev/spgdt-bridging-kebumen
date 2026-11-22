@@ -1,9 +1,9 @@
-# SPGDT Bridging – Kebumen Regency
+﻿# SPGDT Bridging â€“ Kebumen Regency
 
 [![PHP lint](https://github.com/ArkFunDev/spgdt-bridging-kebumen/actions/workflows/php-lint.yml/badge.svg)](https://github.com/ArkFunDev/spgdt-bridging-kebumen/actions/workflows/php-lint.yml)
 [![code](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-8.0%2B-777bb4)](https://www.php.net/)
-[![status](https://img.shields.io/badge/status-in%20production-brightgreen)](#why-it-matters)
+[![status](https://img.shields.io/badge/status-stable-brightgreen)](#why-it-matters)
 
 Automated service that pushes **hospital bed availability** and **blood stock** from a hospital information system (SIMRS) database to the regional emergency-care platform **SPGDT** (*Sistem Penanggulangan Gawat Darurat Terpadu*, Integrated Emergency Response System) of Kebumen Regency, Central Java, Indonesia. It runs three times a day with no manual data entry.
 
@@ -19,7 +19,7 @@ Ambulance crews and emergency dispatchers need to know **which hospital still ha
 
 ```mermaid
 flowchart LR
-    T[Windows Task Scheduler<br/>07:00 · 13:00 · 20:00] --> B[run_bridging_spgdt.bat]
+    T[Windows Task Scheduler<br/>07:00 Â· 13:00 Â· 20:00] --> B[run_bridging_spgdt.bat]
     B --> P[bridging_update_spgdt.php]
     P -->|read-only, aggregates| DB[(Hospital DB / SIMRS)]
     P -->|login / token refresh| API[SPGDT API]
@@ -29,7 +29,7 @@ flowchart LR
 
 ## Features
 
-- **Two datasets:** beds (VVIP, VIP, Class 1–3, ICU, ICCU, perinatal, delivery room, isolation, ER, ventilators) and blood stock (A, B, AB, O).
+- **Two datasets:** beds (VVIP, VIP, Class 1â€“3, ICU, ICCU, perinatal, delivery room, isolation, ER, ventilators) and blood stock (A, B, AB, O).
 - **Automatic token management:** the token is renewed monthly, and renewed and retried automatically if the API rejects it (HTTP 401/403).
 - **No overlapping runs:** a `flock`-based lock file stops two instances from overwriting each other.
 - **Capacity validation:** reported occupancy never exceeds the hospital's official capacity, and over-capacity events are logged.
@@ -118,11 +118,11 @@ The config path can be overridden with the `SPGDT_CONFIG` environment variable.
 
 ```
 .
-├── bridging_update_spgdt.php        # main script
-├── config.example.php               # configuration template (copy to config.php)
-├── run_bridging_spgdt.bat           # launcher for Task Scheduler
-├── Bridging_SPGDT_Auto_Update.xml   # Windows scheduled-task template
-├── .gitignore  .gitattributes  LICENSE
+â”œâ”€â”€ bridging_update_spgdt.php        # main script
+â”œâ”€â”€ config.example.php               # configuration template (copy to config.php)
+â”œâ”€â”€ run_bridging_spgdt.bat           # launcher for Task Scheduler
+â”œâ”€â”€ Bridging_SPGDT_Auto_Update.xml   # Windows scheduled-task template
+â”œâ”€â”€ .gitignore  .gitattributes  LICENSE
 ```
 
 Note: log messages and code comments are currently in Indonesian, the working language of the deployment.
@@ -141,4 +141,4 @@ Note: log messages and code comments are currently in Indonesian, the working la
 
 ## Contact
 
-[YOUR NAME] · [email or GitHub/LinkedIn profile]
+[YOUR NAME] Â· [email or GitHub/LinkedIn profile]
