@@ -1,0 +1,14 @@
+# Secrets & runtime state - JANGAN di-commit
+config.php
+token_spgdt.json
+*.lock
+
+# Runtime output
+log_bridging*.txt
+summary_data_spgdt*.txt
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
