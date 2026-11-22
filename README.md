@@ -1,4 +1,4 @@
-﻿# SPGDT Bridging â€“ Kebumen Regency
+﻿# SPGDT Bridging Kebumen Regency
 
 [![PHP lint](https://github.com/ArkFunDev/spgdt-bridging-kebumen/actions/workflows/php-lint.yml/badge.svg)](https://github.com/ArkFunDev/spgdt-bridging-kebumen/actions/workflows/php-lint.yml)
 [![code](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
@@ -29,7 +29,7 @@ flowchart LR
 
 ## Features
 
-- **Two datasets:** beds (VVIP, VIP, Class 1â€“3, ICU, ICCU, perinatal, delivery room, isolation, ER, ventilators) and blood stock (A, B, AB, O).
+- **Two datasets:** beds (VVIP, VIP, Class 13, ICU, ICCU, perinatal, delivery room, isolation, ER, ventilators) and blood stock (A, B, AB, O).
 - **Automatic token management:** the token is renewed monthly, and renewed and retried automatically if the API rejects it (HTTP 401/403).
 - **No overlapping runs:** a `flock`-based lock file stops two instances from overwriting each other.
 - **Capacity validation:** reported occupancy never exceeds the hospital's official capacity, and over-capacity events are logged.
