@@ -1,5 +1,10 @@
 # SPGDT Bridging – Kebumen Regency
 
+[![PHP lint](https://github.com/ArkFunDev/spgdt-bridging-kebumen/actions/workflows/php-lint.yml/badge.svg)](https://github.com/ArkFunDev/spgdt-bridging-kebumen/actions/workflows/php-lint.yml)
+[![code](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-8.0%2B-777bb4)](https://www.php.net/)
+[![status](https://img.shields.io/badge/status-in%20production-brightgreen)](#why-it-matters)
+
 Automated service that pushes **hospital bed availability** and **blood stock** from a hospital information system (SIMRS) database to the regional emergency-care platform **SPGDT** (*Sistem Penanggulangan Gawat Darurat Terpadu*, Integrated Emergency Response System) of Kebumen Regency, Central Java, Indonesia. It runs three times a day with no manual data entry.
 
 It is a small, dependency-free PHP tool that reads **aggregate counts only**, handles authentication and token renewal, retries failed requests, prevents overlapping runs, and rotates its own logs. **No patient-identifiable data is ever read, stored, or transmitted.**
@@ -57,7 +62,7 @@ The expected database schema follows SIMRS Khanza conventions: tables `kamar` (r
 ## Installation
 
 ```bat
-git clone https://github.com/<username>/spgdt-bridging-kebumen.git C:\spgdt
+git clone https://github.com/ArkFunDev/spgdt-bridging-kebumen.git C:\spgdt
 cd C:\spgdt
 copy config.example.php config.php
 notepad config.php
