@@ -1,60 +1,60 @@
-# SPGDT Bridging – Kabupaten Kebumen
+# SPGDT Bridging – Kebumen Regency
 
-Otomasi pengiriman **ketersediaan tempat tidur** dan **stok darah** dari database SIMRS rumah sakit ke platform **SPGDT** (Sistem Penanggulangan Gawat Darurat Terpadu) Kabupaten Kebumen, tiga kali sehari tanpa input manual.
+Automated service that pushes **hospital bed availability** and **blood stock** from a hospital information system (SIMRS) database to the regional emergency-care platform **SPGDT** (*Sistem Penanggulangan Gawat Darurat Terpadu*, Integrated Emergency Response System) of Kebumen Regency, Central Java, Indonesia. It runs three times a day with no manual data entry.
 
-> 🇬🇧 **In short:** a small, dependency-free PHP service that reads *aggregate* bed-occupancy and blood-stock counts from a hospital information system (SIMRS) database and pushes them to a regional emergency-care API (SPGDT) on a schedule. It handles authentication, token renewal, retries, overlapping runs, and log rotation. No patient-identifiable data is ever read, stored, or transmitted.
+It is a small, dependency-free PHP tool that reads **aggregate counts only**, handles authentication and token renewal, retries failed requests, prevents overlapping runs, and rotates its own logs. **No patient-identifiable data is ever read, stored, or transmitted.**
 
-Dibuat dan dioperasikan di lingkungan rumah sakit nyata sebagai bagian dari upaya menjaga informasi kapasitas gawat darurat tetap akurat bagi petugas rujukan.
+Built and operated in a real hospital environment.
 
-## Mengapa penting
+## Why it matters
 
-Petugas ambulans dan call center gawat darurat perlu tahu **rumah sakit mana yang masih punya ICU kosong atau stok darah golongan tertentu** sebelum merujuk pasien. Data yang diperbarui manual cepat basi. Skrip ini menjaga data tersebut mutakhir secara otomatis dan aman.
+Ambulance crews and emergency dispatchers need to know **which hospital still has a free ICU bed or a particular blood type** before referring a patient. Manually maintained data goes stale quickly. This tool keeps it current, automatically and safely.
 
-## Alur kerja
+## How it works
 
 ```mermaid
 flowchart LR
     T[Windows Task Scheduler<br/>07:00 · 13:00 · 20:00] --> B[run_bridging_spgdt.bat]
     B --> P[bridging_update_spgdt.php]
-    P -->|read-only, agregat| DB[(Database SIMRS)]
-    P -->|login / refresh token| API[API SPGDT]
+    P -->|read-only, aggregates| DB[(Hospital DB / SIMRS)]
+    P -->|login / token refresh| API[SPGDT API]
     P -->|update_kamar<br/>update_darah| API
     P --> L[log_bridging.txt<br/>summary_data_spgdt.txt]
 ```
 
-## Fitur
+## Features
 
-- **Dua dataset:** kamar (VVIP, VIP, Kelas 1–3, ICU, ICCU, Peristi, ruang bersalin, isolasi, UGD, ventilator) dan stok darah (A, B, AB, O).
-- **Auto-refresh token:** token diperbarui bulanan dan otomatis diperbarui + dikirim ulang bila ditolak API (401/403).
-- **Cegah eksekusi ganda:** lock file (`flock`) sehingga dua run tidak saling menimpa.
-- **Validasi kapasitas:** jumlah terisi tidak pernah melebihi kapasitas SK rumah sakit; kejadian overkapasitas dicatat di log.
-- **Fail-safe:** jika query database gagal, pengiriman dibatalkan. Skrip tidak mengirim angka nol yang bisa menimpa data valid di SPGDT.
-- **Observability:** log bersesi (`RUN:<id>`), ringkasan tabel tiap pengiriman, rotasi otomatis (log 2 MB, ringkasan 5 MB), dan exit code yang jelas untuk monitoring.
-- **Tanpa dependensi:** hanya PHP + ekstensi `curl` dan `mysqli`.
+- **Two datasets:** beds (VVIP, VIP, Class 1–3, ICU, ICCU, perinatal, delivery room, isolation, ER, ventilators) and blood stock (A, B, AB, O).
+- **Automatic token management:** the token is renewed monthly, and renewed and retried automatically if the API rejects it (HTTP 401/403).
+- **No overlapping runs:** a `flock`-based lock file stops two instances from overwriting each other.
+- **Capacity validation:** reported occupancy never exceeds the hospital's official capacity, and over-capacity events are logged.
+- **Fail-safe by design:** if a database query fails, the upload is cancelled. The tool never sends zeros that would overwrite valid data on the platform.
+- **Observability:** per-run session IDs in logs, a readable summary table for every upload, automatic rotation (logs at 2 MB, summaries at 5 MB), and meaningful exit codes for monitoring.
+- **No dependencies:** PHP with the `curl` and `mysqli` extensions only.
 
-## Privasi & keamanan
+## Privacy and security
 
-| Aspek | Pendekatan |
+| Area | Approach |
 |---|---|
-| Data pasien | **Tidak dibaca/dikirim.** Hanya `COUNT`/`SUM` agregat. |
-| Kredensial | Di `config.php` (di-`.gitignore`), tidak ada di kode sumber. Contoh: `config.example.php`. |
-| Akun database | Cukup hak **SELECT** (read-only). |
-| TLS | Verifikasi sertifikat **aktif secara default**; dapat diberi `ca_bundle` untuk XAMPP Windows. |
-| SQL | Query bernilai dinamis memakai *prepared statement*. |
-| Token | Disimpan di `token_spgdt.json` (di-`.gitignore`, permission 0600 di OS yang mendukung). |
-| Log | Tidak mencatat password maupun token. |
+| Patient data | **Never read or transmitted.** Only aggregate `COUNT` / `SUM` queries. |
+| Credentials | Kept in `config.php` (git-ignored), never in source code. Template: `config.example.php`. |
+| Database account | A **read-only** (`SELECT`) account is sufficient. |
+| TLS | Certificate verification is **on by default**; a `ca_bundle` option supports Windows/XAMPP setups. |
+| SQL | Queries with dynamic values use prepared statements. |
+| Token | Stored in `token_spgdt.json` (git-ignored; mode 0600 where the OS supports it). |
+| Logs | Passwords and tokens are never logged. |
 
-Jika Anda menemukan celah keamanan, mohon laporkan secara privat (lihat bagian Kontak) sebelum membuat issue publik.
+Please report security issues privately (see Contact) before opening a public issue.
 
-## Kebutuhan
+## Requirements
 
-- PHP **8.0+** dengan ekstensi `curl`, `mysqli` (mysqlnd)
-- Akses jaringan ke API SPGDT dan database SIMRS
-- Windows (Task Scheduler) atau cron di Linux
+- PHP **8.0+** with the `curl` and `mysqli` (mysqlnd) extensions
+- Network access to the SPGDT API and the hospital database
+- Windows (Task Scheduler) or Linux (cron)
 
-Skema database yang diasumsikan (gaya SIMRS Khanza): tabel `kamar`, `reg_periksa`, `catatan_observasi_ventilator`, `utd_stok_darah`. Sesuaikan query di `bridging_update_spgdt.php` bila skema Anda berbeda.
+The expected database schema follows SIMRS Khanza conventions: tables `kamar` (rooms), `reg_periksa` (registrations), `catatan_observasi_ventilator` (ventilator observations) and `utd_stok_darah` (blood bank stock). Adjust the queries in `bridging_update_spgdt.php` if your schema differs.
 
-## Instalasi
+## Installation
 
 ```bat
 git clone https://github.com/<username>/spgdt-bridging-kebumen.git C:\spgdt
@@ -63,67 +63,77 @@ copy config.example.php config.php
 notepad config.php
 ```
 
-Isi `config.php` (URL API, kredensial, database, kapasitas SK), lalu uji manual:
+Fill in `config.php` (API URL, credentials, database, official bed capacities), then test manually:
 
 ```bat
 C:\xampp\php\php.exe -f bridging_update_spgdt.php
 ```
 
-### Penjadwalan (Windows)
+### Scheduling on Windows
 
-Impor template task, lalu sesuaikan path di tab *Actions* bila repo tidak di `C:\spgdt`:
+Import the task template, then adjust the path in the *Actions* tab if the repo is not in `C:\spgdt`:
 
 ```bat
 schtasks /Create /TN "Bridging SPGDT Auto Update" /XML Bridging_SPGDT_Auto_Update.xml /RU <USER> /RP *
 ```
 
-Atau tanpa XML:
+If PHP is not at `C:\xampp\php\php.exe`, set the `PHP_BIN` environment variable.
 
-```bat
-schtasks /Create /TN "Bridging SPGDT Auto Update" /TR "C:\spgdt\run_bridging_spgdt.bat" /SC DAILY /ST 07:00
-```
-
-(Tambahkan trigger 13:00 dan 20:00 lewat Task Scheduler.) Jika PHP tidak di `C:\xampp\php\php.exe`, set variabel lingkungan `PHP_BIN`.
-
-### Linux (cron)
+### Scheduling on Linux (cron)
 
 ```cron
 0 7,13,20 * * * /usr/bin/php /opt/spgdt/bridging_update_spgdt.php >> /var/log/spgdt-cron.log 2>&1
 ```
 
-## Exit code
+## Configuration
 
-| Kode | Arti |
+| Key | Description |
 |---|---|
-| 0 | Semua pengiriman berhasil |
-| 1 | Satu atau lebih pengiriman gagal |
-| 2 | Instance lain masih berjalan |
-| 3 | Konfigurasi tidak ditemukan/tidak valid |
-| 4 | Gagal autentikasi ke API |
-| 5 | Gagal koneksi database |
+| `api.base_url` | SPGDT API base URL, ending with `/` |
+| `api.username` / `api.password` | API credentials |
+| `api.verify_ssl` / `api.ca_bundle` | TLS verification and optional CA bundle path |
+| `db.*` | Database host, port, user, password, name |
+| `capacity.*` | Official bed capacity per category |
+| `debug` | Show PHP errors in the console (debugging only) |
 
-## Struktur repo
+The config path can be overridden with the `SPGDT_CONFIG` environment variable.
+
+## Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | All uploads succeeded |
+| 1 | One or more uploads failed |
+| 2 | Another instance is still running |
+| 3 | Configuration missing or invalid |
+| 4 | API authentication failed |
+| 5 | Database connection failed |
+
+## Repository layout
 
 ```
 .
-├── bridging_update_spgdt.php        # skrip utama
-├── config.example.php               # templat konfigurasi (salin ke config.php)
-├── run_bridging_spgdt.bat           # launcher untuk Task Scheduler
-├── Bridging_SPGDT_Auto_Update.xml   # templat task Windows
+├── bridging_update_spgdt.php        # main script
+├── config.example.php               # configuration template (copy to config.php)
+├── run_bridging_spgdt.bat           # launcher for Task Scheduler
+├── Bridging_SPGDT_Auto_Update.xml   # Windows scheduled-task template
 ├── .gitignore  .gitattributes  LICENSE
 ```
 
-## Pengembangan lanjutan (roadmap)
+Note: log messages and code comments are currently in Indonesian, the working language of the deployment.
 
-- Notifikasi (email/Telegram) bila run gagal berturut-turut
-- Pengujian otomatis dengan mock API dan database uji
-- Dukungan multi-rumah sakit via beberapa file konfigurasi
-- Mode `--dry-run` untuk melihat payload tanpa mengirim
+## Roadmap
 
-## Lisensi
+- Alerts (email/Telegram) after consecutive failed runs
+- Automated tests with a mock API and test database
+- Multi-hospital support through multiple config files
+- `--dry-run` mode to inspect the payload without sending it
+- English log messages via a language option
 
-[MIT](LICENSE). Silakan dipakai ulang dan diadaptasi untuk fasilitas kesehatan lain.
+## License
 
-## Kontak
+[MIT](LICENSE). Free to reuse and adapt for other healthcare facilities.
 
-ArkFunDev · Helmy Ashari
+## Contact
+
+[YOUR NAME] · [email or GitHub/LinkedIn profile]
