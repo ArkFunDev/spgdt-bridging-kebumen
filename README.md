@@ -10,6 +10,7 @@ Automated service that pushes **hospital bed availability** and **blood stock** 
 It is a small, dependency-free PHP tool that reads **aggregate counts only**, handles authentication and token renewal, retries failed requests, prevents overlapping runs, and rotates its own logs. **No patient-identifiable data is ever read, stored, or transmitted.**
 
 Built and operated in a real hospital environment.
+"Running in production at a district hospital since January 2026"
 
 ## Why it matters
 
